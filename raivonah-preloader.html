@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Raivonah — Preloader</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --blue:   #3B82F6;
+    --indigo: #6366F1;
+    --violet: #8B5CF6;
+    --void:   #000000;
+    --deep:   #050508;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--void);
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Preloader Shell ── */
+  #preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  /* Particle canvas — full screen, sits behind logo */
+  #particle-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ── Blueprint grid ── */
+  #blueprint-grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .bp-grid-svg {
+    width: 100%; height: 100%;
+    position: absolute;
+    inset: 0;
+  }
+
+  /* ── Center stage ── */
+  #center-stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  /* ── Logo SVG container ── */
+  #logo-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Construction crosshairs */
+  #crosshair {
+    position: absolute;
+    inset: -30px;
+    opacity: 0;
+  }
+  .ch-line {
+    position: absolute;
+    background: rgba(99,102,241,0.35);
+  }
+  .ch-h {
+    height: 1px; width: 100%;
+    top: 50%; transform: translateY(-50%);
+  }
+  .ch-v {
+    width: 1px; height: 100%;
+    left: 50%; transform: translateX(-50%);
+  }
+  .ch-corner {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-color: rgba(99,102,241,0.5);
+    border-style: solid;
+    border-width: 0;
+  }
+  .ch-tl { top:0; left:0;  border-top-width:1px; border-left-width:1px; }
+  .ch-tr { top:0; right:0; border-top-width:1px; border-right-width:1px; }
+  .ch-bl { bottom:0; left:0;  border-bottom-width:1px; border-left-width:1px; }
+  .ch-br { bottom:0; right:0; border-bottom-width:1px; border-right-width:1px; }
+
+  /* ── R logo SVG ── */
+  #logo-svg {
+    width: 100px;
+    height: 100px;
+    position: relative;
+    z-index: 2;
+    overflow: visible;
+  }
+
+  /* R path strokes — drawn in */
+  .r-stroke {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Energy glow filter */
+  #energy-glow {
+    position: absolute;
+    inset: -60px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.0) 0%, transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Tagline ── */
+  #tagline {
+    margin-top: 32px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(160, 160, 184, 0);
+    white-space: nowrap;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Tagline underline */
+  #tagline-line {
+    width: 0%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #6366F1, transparent);
+    margin: 8px auto 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── Hero reveal overlay ── */
+  #hero-reveal {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(99,102,241,0) 0%, #000 70%);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Demo hero behind (becomes visible at end) ── */
+  #hero-section {
+    position: fixed;
+    inset: 0;
+    background: #050508;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    opacity: 0;
+  }
+
+  .hero-content {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #5A5A78;
+    margin-bottom: 24px;
+  }
+
+  .hero-headline {
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+    color: #F8F8FF;
+  }
+
+  .hero-headline .grad {
+    background: linear-gradient(135deg, #3B82F6 0%, #6366F1 40%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* replay button */
+  #replay {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 10000;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #A0A0B8;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    opacity: 0;
+    transition: background 200ms, color 200ms;
+  }
+  #replay:hover { background: rgba(99,102,241,0.25); color: #F8F8FF; }
+
+/* ── SKIP BUTTON ── */
+#skip-btn{
+  position:fixed;bottom:32px;right:32px;z-index:9999;
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:.5625rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(160,160,184,.45);background:transparent;border:1px solid rgba(99,102,241,.15);
+  padding:7px 16px;border-radius:6px;cursor:pointer;
+  transition:all .25s ease;
+  animation:skipFadeIn .6s ease .8s both;
+}
+#skip-btn:hover{color:rgba(248,248,255,.9);border-color:rgba(99,102,241,.45);background:rgba(99,102,241,.08)}
+@keyframes skipFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PROGRESS STRIP ── */
+#preloader-progress{
+  position:fixed;bottom:0;left:0;right:0;height:1px;z-index:9999;
+  background:rgba(255,255,255,.04);
+}
+#preloader-progress-fill{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#3B82F6,#6366F1,#8B5CF6);
+  transition:width .1s linear;
+}
+</style>
+</head>
+<body>
+
+<!-- Hero (revealed after preloader) -->
+<div id="hero-section">
+  <canvas id="hero-bg-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Raivonah Agency</div>
+    <h1 class="hero-headline">
+      From idea<br/>to <span class="grad">product.</span>
+    </h1>
+  </div>
+</div>
+
+<!-- Preloader -->
+<div id="preloader">
+
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Blueprint ambient grid -->
+  <div id="blueprint-grid">
+    <svg class="bp-grid-svg" id="bp-svg"></svg>
+  </div>
+
+  <!-- Center stage -->
+  <div id="center-stage">
+
+    <!-- RAIVONAH wordmark — appears in Stage 5 alongside logo assembly -->
+    <div id="wordmark" style="
+      opacity:0;
+      font-family:'Inter',system-ui,sans-serif;
+      font-size:clamp(30px,4vw,40px);
+      font-weight:900;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+      color:#F8F8FF;
+      margin-bottom:20px;
+      position:relative;
+      z-index:2;
+      text-align:center;
+    ">
+      RAIV<span id="wordmark-grad" style="
+        background:linear-gradient(135deg,#3B82F6 0%,#6366F1 40%,#8B5CF6 100%);
+        -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+      ">ONAH</span>
+    </div>
+
+    <!-- Construction crosshair -->
+    <div id="crosshair">
+      <div class="ch-line ch-h"></div>
+      <div class="ch-line ch-v"></div>
+      <div class="ch-corner ch-tl"></div>
+      <div class="ch-corner ch-tr"></div>
+      <div class="ch-corner ch-bl"></div>
+      <div class="ch-corner ch-br"></div>
+    </div>
+
+    <!-- Energy glow -->
+    <div id="energy-glow"></div>
+
+    <!-- The R mark — SVG built procedurally -->
+    <div id="logo-wrap">
+      <svg id="logo-svg" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="rGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%"   stop-color="#3B82F6"/>
+            <stop offset="40%"  stop-color="#6366F1"/>
+            <stop offset="100%" stop-color="#8B5CF6"/>
+          </linearGradient>
+          <linearGradient id="rGrad2" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#8B5CF6"/>
+            <stop offset="100%" stop-color="#3B82F6"/>
+          </linearGradient>
+          <filter id="rGlow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+          <filter id="rGlow2">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feFlood flood-color="#6366F1" flood-opacity="0.6" result="color"/>
+            <feComposite in="color" in2="blur" operator="in" result="glow"/>
+            <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+          </filter>
+        </defs>
+
+        <!--
+          R letterform: clean geometric
+          Vertical stem: x=14, y=8 to y=112
+          Bowl (top half): arc right from stem
+          Leg (diagonal): from bowl bottom-right, down-right
+          Tail curl: subtle downward curve at bottom
+        -->
+
+        <!-- Blueprint skeleton (faint guides, drawn first) -->
+        <line id="guide-h1" x1="14" y1="8"   x2="80" y2="8"   stroke="rgba(99,102,241,0.2)" stroke-width="0.5" opacity="0" stroke-dasharray="3 3"/>
+        <line id="guide-h2" x1="14" y1="62"  x2="80" y2="62"  stroke="rgba(99,102,241,0.2)" stroke-width="0.5" opacity="0" stroke-dasharray="3 3"/>
+        <line id="guide-h3" x1="14" y1="112" x2="86" y2="112" stroke="rgba(99,102,241,0.2)" stroke-width="0.5" opacity="0" stroke-dasharray="3 3"/>
+        <circle id="guide-c1" cx="46" cy="35" r="27" stroke="rgba(99,102,241,0.15)" stroke-width="0.5" fill="none" opacity="0" stroke-dasharray="4 4"/>
+
+        <!-- Node points (appear in stage 1) -->
+        <g id="nodes" opacity="0">
+          <circle class="node" cx="14"  cy="8"   r="2" fill="rgba(99,102,241,0.6)"/>
+          <circle class="node" cx="14"  cy="62"  r="2" fill="rgba(99,102,241,0.6)"/>
+          <circle class="node" cx="14"  cy="112" r="2" fill="rgba(99,102,241,0.6)"/>
+          <circle class="node" cx="72"  cy="8"   r="2" fill="rgba(99,102,241,0.6)"/>
+          <circle class="node" cx="72"  cy="62"  r="2" fill="rgba(99,102,241,0.6)"/>
+          <circle class="node" cx="86"  cy="112" r="2" fill="rgba(99,102,241,0.6)"/>
+          <circle class="node" cx="80"  cy="35"  r="2" fill="rgba(99,102,241,0.4)"/>
+        </g>
+
+        <!-- R — main paths, each gets stroke-dasharray treatment -->
+
+        <!-- 1. Vertical stem -->
+        <path id="r-stem"
+          d="M14 8 L14 112"
+          class="r-stroke"
+          stroke="url(#rGrad2)"
+          stroke-width="14"
+          stroke-linecap="round"
+        />
+
+        <!-- 2. Bowl top arc -->
+        <path id="r-bowl"
+          d="M14 8 C14 8, 80 8, 80 35 C80 62, 14 62, 14 62"
+          class="r-stroke"
+          stroke="url(#rGrad)"
+          stroke-width="14"
+          stroke-linecap="round"
+        />
+
+        <!-- 3. Leg / diagonal -->
+        <path id="r-leg"
+          d="M14 62 C30 62, 48 68, 86 112"
+          class="r-stroke"
+          stroke="url(#rGrad)"
+          stroke-width="13"
+          stroke-linecap="round"
+        />
+
+        <!-- Energy travel pulse (drawn on top, animated) -->
+        <path id="r-energy-stem"
+          d="M14 8 L14 112"
+          class="r-stroke"
+          stroke="white"
+          stroke-width="2"
+          opacity="0"
+          stroke-linecap="round"
+        />
+        <path id="r-energy-bowl"
+          d="M14 8 C14 8, 80 8, 80 35 C80 62, 14 62, 14 62"
+          class="r-stroke"
+          stroke="white"
+          stroke-width="2"
+          opacity="0"
+          stroke-linecap="round"
+        />
+        <path id="r-energy-leg"
+          d="M14 62 C30 62, 48 68, 86 112"
+          class="r-stroke"
+          stroke="white"
+          stroke-width="1.5"
+          opacity="0"
+          stroke-linecap="round"
+        />
+
+      </svg>
+    </div>
+
+    <!-- Tagline -->
+    <div id="tagline">IDEATION TO EXECUTION</div>
+    <div id="tagline-line"></div>
+
+  </div><!-- /center-stage -->
+
+  <div id="hero-reveal"></div>
+
+
+  <button id="skip-btn" aria-label="Skip intro">Skip ↓</button>
+  <div id="preloader-progress"><div id="preloader-progress-fill"></div></div>
+</div><!-- /preloader -->
+
+<button id="replay">↺ Replay</button>
+
+<!-- GSAP CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js">
+// ── SKIP BUTTON ──
+(function(){
+  const skipBtn = document.getElementById('skip-btn');
+  const progressFill = document.getElementById('preloader-progress-fill');
+  if(!skipBtn) return;
+
+  // Animate progress bar in sync with timeline
+  let progressInterval;
+  const totalDur = 2800; // ms
+  const start = Date.now();
+  progressInterval = setInterval(()=>{
+    const elapsed = Date.now() - start;
+    const pct = Math.min(elapsed/totalDur*100, 100);
+    if(progressFill) progressFill.style.width = pct + '%';
+    if(pct >= 100) clearInterval(progressInterval);
+  }, 50);
+
+  skipBtn.addEventListener('click', ()=>{
+    skipBtn.style.display = 'none';
+    if(progressInterval) clearInterval(progressInterval);
+    gsap.to('#preloader',{opacity:0,duration:.4,ease:'power2.in',onComplete:()=>{
+      const pre = document.getElementById('preloader');
+      if(pre) pre.style.display='none';
+      const hero = document.getElementById('hero-section');
+      if(hero) gsap.to(hero,{opacity:1,duration:.5});
+      const replay = document.getElementById('replay');
+      if(replay) replay.style.opacity='1';
+    }});
+  });
+})();
+
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
+
+<script>
+// ─────────────────────────────────────────────
+//  RAIVONAH PRELOADER
+//  7-stage cinematic sequence · ~3.2s total
+// ─────────────────────────────────────────────
+
+const { gsap } = window;
+
+// Register CustomEase
+CustomEase.create("expo", "0.16, 1, 0.3, 1");
+CustomEase.create("cinema", "0.22, 1, 0.36, 1");
+CustomEase.create("spring", "0.34, 1.56, 0.64, 1");
+
+// ── Utility: get path length ──
+function setDash(el) {
+  if (!el) return 0;
+  const len = el.getTotalLength ? el.getTotalLength() : 300;
+  el.style.strokeDasharray  = len;
+  el.style.strokeDashoffset = len;
+  return len;
+}
+
+// ── Blueprint point generation ──
+function buildBlueprintGrid() {
+  const svg = document.getElementById('bp-svg');
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const points = [];
+  const cols = Math.ceil(W / 80);
+  const rows = Math.ceil(H / 80);
+
+  for (let r = 0; r <= rows; r++) {
+    for (let c = 0; c <= cols; c++) {
+      const x = c * 80 + (Math.random() - 0.5) * 20;
+      const y = r * 80 + (Math.random() - 0.5) * 20;
+
+      // Cross dot
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      g.setAttribute('opacity', '0');
+      g.classList.add('bp-node');
+
+      const h = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      h.setAttribute('x1', x - 3); h.setAttribute('x2', x + 3);
+      h.setAttribute('y1', y);     h.setAttribute('y2', y);
+      h.setAttribute('stroke', 'rgba(99,102,241,0.4)');
+      h.setAttribute('stroke-width', '0.5');
+
+      const v = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      v.setAttribute('x1', x);     v.setAttribute('x2', x);
+      v.setAttribute('y1', y - 3); v.setAttribute('y2', y + 3);
+      v.setAttribute('stroke', 'rgba(99,102,241,0.4)');
+      v.setAttribute('stroke-width', '0.5');
+
+      g.appendChild(h); g.appendChild(v);
+      svg.appendChild(g);
+      points.push({ el: g, x, y });
+    }
+  }
+
+  // Scatter some connecting lines
+  const lineCount = 40;
+  for (let i = 0; i < lineCount; i++) {
+    const a = points[Math.floor(Math.random() * points.length)];
+    const b = points[Math.floor(Math.random() * points.length)];
+    if (Math.abs(a.x - b.x) > 200 || Math.abs(a.y - b.y) > 200) continue;
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+    line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+    line.setAttribute('stroke', 'rgba(99,102,241,0.08)');
+    line.setAttribute('stroke-width', '0.5');
+    line.setAttribute('opacity', '0');
+    line.classList.add('bp-line');
+    svg.insertBefore(line, svg.firstChild);
+  }
+
+  return points;
+}
+
+// ── Particle system ──
+class ParticleSystem {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx    = canvas.getContext('2d');
+    this.particles = [];
+    this.active = false;
+    this.resize();
+  }
+
+  resize() {
+    this.canvas.width  = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  spawn(cx, cy, count, burst) {
+    this.active = true;
+    const colors = ['#3B82F6','#6366F1','#8B5CF6','#A855F7','#ffffff'];
+
+    for (let i = 0; i < count; i++) {
+      const angle  = (Math.random() * Math.PI * 2);
+      const speed  = burst
+        ? (2 + Math.random() * 12)
+        : (0.2 + Math.random() * 1.5);
+      const size   = burst
+        ? (1 + Math.random() * 3.5)
+        : (0.5 + Math.random() * 1.5);
+      const color  = colors[Math.floor(Math.random() * colors.length)];
+      const life   = burst
+        ? (0.6 + Math.random() * 0.8)
+        : (1.5 + Math.random() * 2);
+
+      this.particles.push({
+        x: cx + (Math.random() - 0.5) * (burst ? 20 : 60),
+        y: cy + (Math.random() - 0.5) * (burst ? 20 : 60),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (burst ? Math.random() * 4 : 0),
+        size,
+        color,
+        alpha: 0.8 + Math.random() * 0.2,
+        life,
+        maxLife: life,
+        gravity: burst ? 0.08 : 0.005,
+        trail: burst ? [] : null,
+      });
+    }
+  }
+
+  // Scatter particles to become background stars
+  spawnBackground(count) {
+    this.active = true;
+    for (let i = 0; i < count; i++) {
+      const x = Math.random() * this.canvas.width;
+      const y = Math.random() * this.canvas.height;
+      this.particles.push({
+        x, y,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        size: 0.5 + Math.random() * 1.5,
+        color: Math.random() > 0.7 ? '#6366F1' : '#ffffff',
+        alpha: 0,
+        targetAlpha: 0.1 + Math.random() * 0.4,
+        life: 99,
+        maxLife: 99,
+        gravity: 0,
+        background: true,
+        fadeIn: true,
+        trail: null,
+      });
+    }
+  }
+
+  tick() {
+    if (!this.active) return;
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.particles = this.particles.filter(p => p.life > 0);
+
+    for (const p of this.particles) {
+      if (p.background) {
+        if (p.fadeIn && p.alpha < p.targetAlpha) {
+          p.alpha += 0.005;
+          if (p.alpha >= p.targetAlpha) p.fadeIn = false;
+        }
+        p.x += p.vx;
+        p.y += p.vy;
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.max(0.1, p.size), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        continue;
+      }
+
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += p.gravity;
+      p.vx *= 0.97;
+      p.life -= 0.016;
+
+      const progress = p.life / p.maxLife;
+
+      if (p.trail) {
+        p.trail.push({ x: p.x, y: p.y });
+        if (p.trail.length > 6) p.trail.shift();
+
+        if (p.trail.length > 1) {
+          ctx.save();
+          for (let t = 1; t < p.trail.length; t++) {
+            const a = (t / p.trail.length) * progress * 0.3;
+            ctx.globalAlpha = a;
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = p.size * (t / p.trail.length);
+            ctx.beginPath();
+            ctx.moveTo(p.trail[t-1].x, p.trail[t-1].y);
+            ctx.lineTo(p.trail[t].x, p.trail[t].y);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
+
+      ctx.save();
+      ctx.globalAlpha = progress * p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.shadowBlur = p.size * 3;
+      ctx.shadowColor = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0.1, p.size * progress), 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  startLoop() {
+    const loop = () => {
+      this.tick();
+      this._raf = requestAnimationFrame(loop);
+    };
+    this._raf = requestAnimationFrame(loop);
+  }
+
+  stopLoop() {
+    cancelAnimationFrame(this._raf);
+  }
+}
+
+// ─────────────────────────────────────────────
+//  MAIN SEQUENCE
+// ─────────────────────────────────────────────
+function runPreloader() {
+
+  // DOM refs
+  const preloader   = document.getElementById('preloader');
+  const bpGrid      = document.getElementById('blueprint-grid');
+  const crosshair   = document.getElementById('crosshair');
+  const nodes       = document.getElementById('nodes');
+  const logoWrap    = document.getElementById('logo-wrap');
+  const energyGlow  = document.getElementById('energy-glow');
+  const tagline     = document.getElementById('tagline');
+  const taglineLine = document.getElementById('tagline-line');
+  const heroSection = document.getElementById('hero-section');
+  const pCanvas     = document.getElementById('particle-canvas');
+
+  // R parts
+  const rStem  = document.getElementById('r-stem');
+  const rBowl  = document.getElementById('r-bowl');
+  const rLeg   = document.getElementById('r-leg');
+  const rEStem = document.getElementById('r-energy-stem');
+  const rEBowl = document.getElementById('r-energy-bowl');
+  const rELeg  = document.getElementById('r-energy-leg');
+
+  // Guides
+  const guides  = ['guide-h1','guide-h2','guide-h3','guide-c1'].map(id => document.getElementById(id));
+  const nodeEls = document.querySelectorAll('.node');
+
+  // Initial state — hide all R parts
+  [rStem, rBowl, rLeg].forEach(el => {
+    setDash(el);
+    gsap.set(el, { opacity: 0 });
+  });
+  [rEStem, rEBowl, rELeg].forEach(el => {
+    setDash(el);
+    gsap.set(el, { opacity: 0 });
+  });
+  guides.forEach(g => gsap.set(g, { opacity: 0 }));
+  gsap.set([logoWrap], { scale: 0.85, opacity: 0 });
+  gsap.set(tagline,     { color: 'rgba(160,160,184,0)' });
+  gsap.set(heroSection, { opacity: 0 });
+
+  // Particle system
+  pCanvas.width  = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+  const ps = new ParticleSystem(pCanvas);
+  ps.startLoop();
+
+  // Blueprint nodes
+  const bpNodes = buildBlueprintGrid();
+  const bpNodeEls = document.querySelectorAll('.bp-node');
+  const bpLineEls = document.querySelectorAll('.bp-line');
+
+  // Master timeline
+  const tl = gsap.timeline({
+    defaults: { ease: "expo" }
+  });
+
+  // ── STAGE 1: Blueprint points appear (0 – 0.5s) ──
+  tl.to(bpGrid, { opacity: 1, duration: 0.01 })
+    .to(bpNodeEls, {
+      opacity: 1,
+      duration: 0.4,
+      stagger: { each: 0.002, from: "center", grid: "auto" },
+      ease: "power2.out"
+    }, 0.05)
+    .to(bpLineEls, {
+      opacity: 1,
+      duration: 0.3,
+      stagger: { each: 0.005, from: "random" },
+      ease: "power2.out"
+    }, 0.1);
+
+  // ── STAGE 2: Construction lines + crosshair (0.4 – 0.8s) ──
+  tl.to(crosshair, { opacity: 1, duration: 0.25, ease: "power2.out" }, 0.38)
+    .to(logoWrap,   { opacity: 1, scale: 1, duration: 0.3, ease: "spring" }, 0.4)
+    .to(guides,     { opacity: 1, duration: 0.2, stagger: 0.06 }, 0.4)
+    .to(nodes,      { opacity: 1, duration: 0.2 }, 0.42)
+    .to(nodeEls,    {
+      scale: 1.5,
+      duration: 0.15,
+      stagger: 0.04,
+      ease: "spring",
+      yoyo: true,
+      repeat: 1,
+    }, 0.5);
+
+  // ── STAGE 3: R assembles (0.7 – 1.6s) ──
+  // Stem draws in
+  tl.to(rStem, {
+    opacity: 1,
+    strokeDashoffset: 0,
+    duration: 0.32,
+    ease: "power3.inOut"
+  }, 0.72)
+  // Bowl draws
+  .to(rBowl, {
+    opacity: 1,
+    strokeDashoffset: 0,
+    duration: 0.38,
+    ease: "power3.inOut"
+  }, 0.98)
+  // Leg draws
+  .to(rLeg, {
+    opacity: 1,
+    strokeDashoffset: 0,
+    duration: 0.28,
+    ease: "power3.inOut"
+  }, 1.3);
+
+  // ── STAGE 4: Energy travels (1.5 – 2.0s) ──
+  tl.to(energyGlow, {
+    background: "radial-gradient(ellipse, rgba(99,102,241,0.25) 0%, transparent 70%)",
+    opacity: 1,
+    duration: 0.3,
+    ease: "power2.out"
+  }, 1.55)
+  // Energy pulse on stem
+  .to(rEStem, { opacity: 0.9, strokeDashoffset: 0, duration: 0.18, ease: "power2.inOut" }, 1.58)
+  .to(rEStem, { opacity: 0, duration: 0.15, ease: "power2.in" }, 1.76)
+  // Energy pulse on bowl
+  .to(rEBowl, { opacity: 0.9, strokeDashoffset: 0, duration: 0.22, ease: "power2.inOut" }, 1.72)
+  .to(rEBowl, { opacity: 0, duration: 0.15, ease: "power2.in" }, 1.94)
+  // Energy pulse on leg
+  .to(rELeg, { opacity: 0.9, strokeDashoffset: 0, duration: 0.18, ease: "power2.inOut" }, 1.90)
+  .to(rELeg, { opacity: 0, duration: 0.12, ease: "power2.in" }, 2.08)
+  // Spawn ambient particles along path
+  .call(() => {
+    const cx = window.innerWidth  / 2;
+    const cy = window.innerHeight / 2 - 10;
+    ps.spawn(cx, cy, 25, false);
+  }, null, 1.6);
+
+  // ── STAGE 5: Logo fully assembles — glow surge + RAIVONAH wordmark (1.9 – 2.2s) ──
+  tl.to(energyGlow, {
+    background: "radial-gradient(ellipse, rgba(99,102,241,0.45) 0%, transparent 60%)",
+    duration: 0.2,
+    ease: "power2.out"
+  }, 1.95)
+  .to([rStem, rBowl, rLeg], {
+    filter: "url(#rGlow2)",
+    duration: 0.2,
+  }, 1.95)
+  // RAIVONAH wordmark slams in with a slight scale spring
+  .fromTo('#wordmark', {
+    opacity: 0,
+    y: -10,
+    scale: 0.92,
+    letterSpacing: '0.3em',
+  }, {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    letterSpacing: '0.18em',
+    duration: 0.5,
+    ease: "spring",
+  }, 0.38)
+  .to(energyGlow, {
+    background: "radial-gradient(ellipse, rgba(99,102,241,0.12) 0%, transparent 70%)",
+    duration: 0.4,
+    ease: "power2.out"
+  }, 2.2);
+
+  // ── STAGE 6: Tagline fades in (2.05 – 2.5s) ──
+  tl.to(tagline, {
+    color: "rgba(160,160,184,0.9)",
+    duration: 0.5,
+    ease: "power2.out"
+  }, 2.1)
+  .to(taglineLine, {
+    width: "100%",
+    duration: 0.45,
+    ease: "expo"
+  }, 2.15);
+
+  // ── STAGE 7: Particle explosion + reveal (2.55 – 3.2s) ──
+  tl.call(() => {
+    const cx = window.innerWidth  / 2;
+    const cy = window.innerHeight / 2 - 10;
+
+    // Big explosion burst
+    ps.spawn(cx, cy, 180, true);
+
+    // Staggered secondary bursts for cinematic feel
+    setTimeout(() => ps.spawn(cx, cy, 80, true),  80);
+    setTimeout(() => ps.spawn(cx, cy, 50, true), 160);
+
+    // After explosion, spawn hero background stars
+    setTimeout(() => ps.spawnBackground(180), 500);
+  }, null, 2.6)
+
+  // Logo + UI explode outward
+  .to([logoWrap, crosshair, nodes], {
+    scale: 1.15,
+    opacity: 0,
+    duration: 0.25,
+    ease: "power3.in"
+  }, 2.12)
+  .to('#wordmark', {
+    scale: 1.12,
+    y: -14,
+    opacity: 0,
+    duration: 0.22,
+    ease: "power3.in"
+  }, 2.62)
+  .to([tagline, taglineLine], {
+    y: 12,
+    opacity: 0,
+    duration: 0.2,
+    ease: "power2.in"
+  }, 2.15)
+  .to(guides, { opacity: 0, duration: 0.15 }, 2.1)
+  .to(bpNodeEls, {
+    opacity: 0,
+    duration: 0.3,
+    stagger: { each: 0.001, from: "center" },
+    ease: "power2.in"
+  }, 2.65)
+  .to(bpLineEls, { opacity: 0, duration: 0.2 }, 2.65)
+  .to(bpGrid,    { opacity: 0, duration: 0.2 }, 2.7)
+
+  // Flash of light
+  .to(preloader, {
+    background: "rgba(99,102,241,0.08)",
+    duration: 0.12,
+    ease: "power2.out"
+  }, 2.62)
+  .to(preloader, {
+    background: "rgba(0,0,0,0)",
+    duration: 0.3,
+    ease: "power2.in"
+  }, 2.74)
+
+  // Hero section fades in underneath
+  .to(heroSection, { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.75)
+
+  // Preloader itself fades
+  .to(preloader, {
+    opacity: 0,
+    duration: 0.4,
+    ease: "power2.inOut",
+    onComplete: () => {
+      preloader.style.display = 'none';
+      document.getElementById('replay').style.opacity = '1';
+    }
+  }, 2.95);
+
+  return tl;
+}
+
+// ── Init ──
+window.addEventListener('load', () => {
+  setTimeout(runPreloader, 100);
+});
+
+// ── Replay ──
+document.getElementById('replay').addEventListener('click', () => {
+  location.reload();
+});
+
+// ── Resize ──
+window.addEventListener('resize', () => {
+  const c = document.getElementById('particle-canvas');
+  if (c) { c.width = window.innerWidth; c.height = window.innerHeight; }
+});
+</script>
+</body>
+</html>
