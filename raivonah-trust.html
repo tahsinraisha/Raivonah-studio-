@@ -1,1 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Raivonah — Trust Section</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --blue:#3B82F6;--indigo:#6366F1;--violet:#8B5CF6;
+  --deep:#050508;--surface:#0A0A0F;--elevated:#111118;--muted:#1A1A24;
+  --border-s:#1E1E2E;--border-d:#2A2A3E;
+  --text-1:#F8F8FF;--text-2:#A0A0B8;--text-3:#5A5A78;--text-4:#32324A;
+  --grad:linear-gradient(135deg,#3B82F6 0%,#6366F1 45%,#8B5CF6 100%);
+}
+html,body{background:var(--deep);color:var(--text-1);
+  font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 
+/* ── SIMULATED HERO BOTTOM EDGE ── */
+.hero-stub{
+  height:120px;
+  background:linear-gradient(to bottom,#050508,#050508);
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:0;
+}
+
+/* ════════════════════════════════════════
+   TRUST SECTION
+════════════════════════════════════════ */
+#trust{
+  position:relative;
+  padding:0 0 100px;
+  background:var(--deep);
+  overflow:hidden;
+}
+
+/* Top separator line with glow */
+.trust-separator{
+  position:relative;
+  height:1px;
+  background:var(--border-s);
+  margin-bottom:72px;
+}
+.trust-separator::after{
+  content:'';
+  position:absolute;
+  top:-1px;left:50%;transform:translateX(-50%);
+  width:480px;height:3px;
+  background:linear-gradient(90deg,transparent,rgba(99,102,241,.7),rgba(139,92,246,.5),transparent);
+  filter:blur(3px);
+}
+
+/* Ambient glow behind section */
+.trust-glow{
+  position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-55%);
+  width:900px;height:500px;
+  background:radial-gradient(ellipse,rgba(99,102,241,.04) 0%,transparent 65%);
+  pointer-events:none;
+}
+
+/* ── SECTION HEADER ── */
+.trust-header{
+  text-align:center;
+  padding:0 24px;
+  margin-bottom:56px;
+  position:relative;z-index:2;
+}
+.trust-eyebrow{
+  display:inline-flex;align-items:center;gap:10px;
+  font-size:.6rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--text-3);margin-bottom:16px;
+}
+.trust-eyebrow-line{
+  width:28px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--text-3));
+}
+.trust-eyebrow-line.right{
+  background:linear-gradient(90deg,var(--text-3),transparent);
+}
+.trust-heading{
+  font-size:clamp(.9375rem,1.4vw,1.0625rem);
+  font-weight:400;color:var(--text-3);
+  letter-spacing:.01em;line-height:1.6;
+  max-width:480px;margin:0 auto;
+}
+.trust-heading strong{
+  color:var(--text-2);font-weight:500;
+}
+
+/* ── ROW LABEL ── */
+.row-label{
+  font-size:.525rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--text-4);text-align:center;margin-bottom:14px;
+  position:relative;z-index:2;
+}
+
+/* ── MARQUEE WRAPPER ── */
+.marquee-section{
+  position:relative;
+  margin-bottom:8px;
+}
+
+/* Left + right fade masks */
+.marquee-section::before,
+.marquee-section::after{
+  content:'';
+  position:absolute;top:0;bottom:0;
+  width:clamp(80px,12vw,180px);
+  z-index:3;pointer-events:none;
+}
+.marquee-section::before{
+  left:0;
+  background:linear-gradient(to right,var(--deep) 0%,transparent 100%);
+}
+.marquee-section::after{
+  right:0;
+  background:linear-gradient(to left,var(--deep) 0%,transparent 100%);
+}
+
+/* Track */
+.marquee-track{
+  display:flex;
+  overflow:hidden;
+  padding:6px 0;
+}
+
+/* Inner scrolling belt */
+.marquee-belt{
+  display:flex;
+  flex-shrink:0;
+  gap:10px;
+  will-change:transform;
+}
+
+/* Pause on hover */
+.marquee-track:hover .marquee-belt{
+  animation-play-state:paused !important;
+}
+
+/* ── ANIMATIONS: three speeds, two directions ── */
+@keyframes scrollLeft{
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+@keyframes scrollRight{
+  from{transform:translateX(-50%)}
+  to{transform:translateX(0)}
+}
+
+.belt-slow-left  { animation:scrollLeft  55s linear infinite; }
+.belt-mid-right  { animation:scrollRight 38s linear infinite; }
+.belt-fast-left  { animation:scrollLeft  26s linear infinite; }
+
+/* ── ITEM BASE ── */
+.m-item{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 22px;
+  border-radius:11px;
+  border:1px solid rgba(255,255,255,.06);
+  background:rgba(10,10,18,.8);
+  white-space:nowrap;
+  cursor:default;
+  transition:
+    border-color .3s ease,
+    background   .3s ease,
+    box-shadow   .3s ease,
+    transform    .3s cubic-bezier(.16,1,.3,1);
+  flex-shrink:0;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Subtle inner shimmer layer */
+.m-item::before{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.025) 0%,transparent 60%);
+  opacity:0;transition:opacity .3s;
+  pointer-events:none;
+}
+
+.m-item:hover{
+  border-color:rgba(99,102,241,.4);
+  background:rgba(99,102,241,.08);
+  box-shadow:0 0 28px rgba(99,102,241,.15),0 8px 32px rgba(0,0,0,.3),0 0 0 1px rgba(99,102,241,.2) inset;
+  transform:translateY(-3px);
+}
+.m-item:hover::before{ opacity:1; }
+
+/* Icon wrapper */
+.m-icon{
+  width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  opacity:.65;
+  transition:opacity .3s;
+}
+.m-item:hover .m-icon{ opacity:1; }
+
+/* SVG icons sized uniformly */
+.m-icon svg{ width:18px;height:18px;display:block; }
+
+/* Text */
+.m-text{
+  font-size:.75rem;font-weight:600;letter-spacing:.01em;
+  color:rgba(160,160,200,.85);
+  transition:color .3s;
+}
+.m-item:hover .m-text{ color:var(--text-1); }
+
+/* ── INDUSTRY PILL variant (larger, pill shape) ── */
+.m-item.pill{
+  padding:9px 22px;border-radius:9999px;gap:8px;
+}
+.m-item.pill .m-text{
+  font-size:.6875rem;font-weight:500;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--text-3);
+}
+.m-item.pill:hover .m-text{ color:var(--text-1); }
+.m-item.pill .m-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--text-4);
+  transition:background .3s;
+  flex-shrink:0;
+}
+.m-item.pill:hover .m-dot{ background:var(--indigo); }
+
+/* ── CAPABILITY TAG variant ── */
+.m-item.tag{
+  padding:8px 16px;border-radius:6px;gap:7px;
+  background:rgba(255,255,255,.015);
+}
+.m-item.tag .m-text{
+  font-size:.6875rem;font-weight:600;letter-spacing:.02em;color:var(--text-3);
+}
+.m-item.tag:hover .m-text{ color:var(--text-1); }
+.m-item.tag .m-chip{
+  font-size:.475rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:2px 6px;border-radius:4px;
+  background:rgba(99,102,241,.1);color:var(--indigo);
+  border:1px solid rgba(99,102,241,.2);
+  opacity:0;transition:opacity .3s;
+  flex-shrink:0;
+}
+.m-item.tag:hover .m-chip{ opacity:1; }
+
+/* ── SPACER DIVIDER between items ── */
+.m-div{
+  width:1px;height:24px;
+  background:var(--border-s);
+  flex-shrink:0;
+  align-self:center;
+  margin:0 4px;
+}
+
+/* ── BOTTOM COPY LINE ── */
+.trust-footnote{
+  text-align:center;
+  margin-top:52px;
+  font-size:.625rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-4);
+  position:relative;z-index:2;
+}
+.trust-footnote span{
+  background:var(--grad);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-weight:600;
+}
+</style>
+</head>
+<body>
+
+<!-- Hero stub so trust section has context -->
+<div class="hero-stub"></div>
+
+<!-- ════════════ TRUST SECTION ════════════ -->
+<section id="trust">
+  <div class="trust-glow"></div>
+  <div class="trust-separator"></div>
+
+  <!-- Header -->
+  <div class="trust-header">
+    <div class="trust-eyebrow">
+      <div class="trust-eyebrow-line"></div>
+      Trusted Across The Stack
+      <div class="trust-eyebrow-line right"></div>
+    </div>
+    <p class="trust-heading">
+      Built with <strong>world-class technologies</strong>, serving every industry,<br/>
+      and capable of <strong>end-to-end execution</strong>.
+    </p>
+  </div>
+
+  <!-- ══ ROW 1: TECHNOLOGIES ══ -->
+  <div class="marquee-section" id="row-tech">
+    <div class="row-label">Technologies</div>
+    <div class="marquee-track" id="track-tech">
+      <div class="marquee-belt belt-slow-left" id="belt-tech"></div>
+    </div>
+  </div>
+
+  <!-- ══ ROW 2: INDUSTRIES ══ -->
+  <div class="marquee-section" style="margin-top:20px" id="row-ind">
+    <div class="row-label">Industries</div>
+    <div class="marquee-track" id="track-ind">
+      <div class="marquee-belt belt-mid-right" id="belt-ind"></div>
+    </div>
+  </div>
+
+  <!-- ══ ROW 3: CAPABILITIES ══ -->
+  <div class="marquee-section" style="margin-top:20px" id="row-cap">
+    <div class="row-label">Capabilities</div>
+    <div class="marquee-track" id="track-cap">
+      <div class="marquee-belt belt-fast-left" id="belt-cap"></div>
+    </div>
+  </div>
+
+  <!-- Footnote -->
+  <div class="trust-footnote">
+    From <span>Ideation</span> to <span>Execution</span> — we own the entire journey
+  </div>
+
+
+  <!-- Micro CTA strip -->
+  <div style="position:relative;z-index:2;text-align:center;margin-top:52px;padding:0 24px;opacity:0;transform:translateY(14px)" id="trust-cta">
+    <div style="display:inline-flex;align-items:center;gap:20px;padding:16px 28px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.02);flex-wrap:wrap;justify-content:center">
+      <span style="font-size:.6875rem;color:var(--text-2);font-weight:500">Trusted by founders across <strong style="color:var(--text-1);font-weight:700">14 industries</strong></span>
+      <div style="width:1px;height:16px;background:rgba(255,255,255,.08)"></div>
+      <button onclick="document.getElementById('contact')?.scrollIntoView({behavior:'smooth'})" style="font-family:inherit;font-size:.6875rem;font-weight:700;padding:8px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#3B82F6,#6366F1,#8B5CF6);color:#fff;cursor:pointer;box-shadow:0 4px 16px rgba(99,102,241,.3);transition:all .25s ease" onmouseover="this.style.boxShadow='0 6px 24px rgba(99,102,241,.5)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='0 4px 16px rgba(99,102,241,.3)';this.style.transform=''">Start a Project →</button>
+    </div>
+  </div>
+
+</section>
+
+<script>
+// ─────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────
+
+const TECHNOLOGIES = [
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'Next.js' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#6366F1" stroke-width="1.5"/><path d="M8 12l3 3 5-5" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'React' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="#8B5CF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'TypeScript' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" stroke="#3B82F6" stroke-width="1.5"/><path d="M8 21h8M12 17v4" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/></svg>`, label: 'Tailwind CSS' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="#8B5CF6"/></svg>`, label: 'Framer Motion' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'Node.js' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="5" rx="9" ry="3" stroke="#3B82F6" stroke-width="1.5"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" stroke="#3B82F6" stroke-width="1.5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" stroke="#3B82F6" stroke-width="1.5"/></svg>`, label: 'PostgreSQL' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="#8B5CF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'Supabase' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="4" y1="22" x2="4" y2="15" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round"/></svg>`, label: 'Vercel' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="9" height="11" rx="1" stroke="#3B82F6" stroke-width="1.5"/><rect x="13" y="2" width="9" height="7" rx="1" stroke="#3B82F6" stroke-width="1.5"/><rect x="13" y="13" width="9" height="9" rx="1" stroke="#3B82F6" stroke-width="1.5"/><rect x="2" y="17" width="9" height="5" rx="1" stroke="#3B82F6" stroke-width="1.5"/></svg>`, label: 'Figma' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><polyline points="16 18 22 12 16 6" stroke="#8B5CF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><polyline points="8 6 2 12 8 18" stroke="#8B5CF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'GraphQL' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'Stripe' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="#3B82F6" stroke-width="1.5"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round"/></svg>`, label: 'GSAP' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="#8B5CF6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'Prisma' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" stroke="#6366F1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'Resend' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="#3B82F6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`, label: 'OpenAI API' },
+  { icon: `<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#8B5CF6" stroke-width="1.5"/><path d="M3 9h18M9 21V9" stroke="#8B5CF6" stroke-width="1.5" stroke-linecap="round"/></svg>`, label: 'Notion API' },
+];
+
+const INDUSTRIES = [
+  { dot: true, label: 'SaaS Platforms' },
+  { dot: true, label: 'FinTech' },
+  { dot: true, label: 'HealthTech' },
+  { dot: true, label: 'E-Commerce' },
+  { dot: true, label: 'EdTech' },
+  { dot: true, label: 'Real Estate' },
+  { dot: true, label: 'Logistics & Supply Chain' },
+  { dot: true, label: 'Media & Publishing' },
+  { dot: true, label: 'Legal Tech' },
+  { dot: true, label: 'PropTech' },
+  { dot: true, label: 'InsurTech' },
+  { dot: true, label: 'Creator Economy' },
+  { dot: true, label: 'B2B Marketplaces' },
+  { dot: true, label: 'Climate Tech' },
+  { dot: true, label: 'HRTech' },
+  { dot: true, label: 'AgriTech' },
+  { dot: true, label: 'Web3 & DeFi' },
+  { dot: true, label: 'CyberSecurity' },
+];
+
+const CAPABILITIES = [
+  { label: 'Product Strategy', chip: 'Discovery' },
+  { label: 'UX Research', chip: 'Design' },
+  { label: 'Brand Identity', chip: 'Brand' },
+  { label: 'UI Design Systems', chip: 'Design' },
+  { label: 'Full-Stack Development', chip: 'Build' },
+  { label: 'API Architecture', chip: 'Build' },
+  { label: 'Mobile Apps', chip: 'Build' },
+  { label: 'AI Integration', chip: 'AI' },
+  { label: 'Performance Optimization', chip: 'Scale' },
+  { label: 'SEO & Analytics', chip: 'Growth' },
+  { label: 'Conversion Rate Optimization', chip: 'Growth' },
+  { label: 'Paid Acquisition', chip: 'Growth' },
+  { label: 'DevOps & Infrastructure', chip: 'Ops' },
+  { label: 'Security Audits', chip: 'Ops' },
+  { label: 'Technical Due Diligence', chip: 'Strategy' },
+  { label: 'Go-To-Market', chip: 'Strategy' },
+  { label: 'Investor Decks', chip: 'Strategy' },
+  { label: 'Data Pipelines', chip: 'Data' },
+];
+
+// ─────────────────────────────────────────────
+//  BUILD BELT ITEMS
+// ─────────────────────────────────────────────
+
+function buildTechItem(t) {
+  return `<div class="m-item">
+    <div class="m-icon">${t.icon}</div>
+    <span class="m-text">${t.label}</span>
+  </div>`;
+}
+
+function buildIndustryItem(ind) {
+  return `<div class="m-item pill">
+    <div class="m-dot"></div>
+    <span class="m-text">${ind.label}</span>
+  </div>`;
+}
+
+function buildCapItem(cap) {
+  return `<div class="m-item tag">
+    <span class="m-text">${cap.label}</span>
+    <span class="m-chip">${cap.chip}</span>
+  </div>`;
+}
+
+function buildBelt(beltId, items, buildFn, divider = false) {
+  const belt = document.getElementById(beltId);
+  // Duplicate 3x for seamless loop
+  let html = '';
+  for (let pass = 0; pass < 3; pass++) {
+    items.forEach((item, i) => {
+      html += buildFn(item);
+      if (divider && i < items.length - 1) {
+        html += `<div class="m-div"></div>`;
+      }
+    });
+  }
+  belt.innerHTML = html;
+}
+
+buildBelt('belt-tech', TECHNOLOGIES, buildTechItem);
+buildBelt('belt-ind',  INDUSTRIES,   buildIndustryItem, true);
+buildBelt('belt-cap',  CAPABILITIES, buildCapItem);
+
+// ─────────────────────────────────────────────
+//  PAUSE ON HOVER — per track
+// ─────────────────────────────────────────────
+// (CSS handles animation-play-state, JS adds
+//  velocity-based easing on resume for polish)
+
+document.querySelectorAll('.marquee-track').forEach(track => {
+  track.addEventListener('mouseenter', () => {
+    track.querySelectorAll('.marquee-belt').forEach(b => {
+      b.style.animationPlayState = 'paused';
+    });
+  });
+  track.addEventListener('mouseleave', () => {
+    track.querySelectorAll('.marquee-belt').forEach(b => {
+      b.style.animationPlayState = 'running';
+    });
+  });
+});
+
+// ─────────────────────────────────────────────
+//  ENTRANCE ANIMATION
+// ─────────────────────────────────────────────
+(function initEntrance() {
+  const section = document.getElementById('trust');
+  const header  = document.querySelector('.trust-header');
+  const rows    = document.querySelectorAll('.marquee-section');
+  const footnote = document.querySelector('.trust-footnote');
+
+  // Set initial states
+  header.style.cssText  += ';opacity:0;transform:translateY(20px)';
+  footnote.style.cssText += ';opacity:0';
+  rows.forEach(r => {
+    r.style.cssText += ';opacity:0;transform:translateY(16px)';
+  });
+
+  const obs = new IntersectionObserver((entries) => {
+    if (!entries[0].isIntersecting) return;
+    obs.disconnect();
+
+    let delay = 0;
+
+    // Header
+    setTimeout(() => {
+      header.style.transition = 'opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1)';
+      header.style.opacity = '1';
+      header.style.transform = 'translateY(0)';
+    }, delay += 50);
+
+    // Rows stagger
+    rows.forEach(r => {
+      setTimeout(() => {
+        r.style.transition = 'opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1)';
+        r.style.opacity = '1';
+        r.style.transform = 'translateY(0)';
+      }, delay += 100);
+    });
+
+    // Footnote
+    setTimeout(() => {
+      footnote.style.transition = 'opacity .5s ease';
+      footnote.style.opacity = '1';
+    }, delay += 120);
+
+  }, { threshold: 0.1 });
+
+  obs.observe(section);
+})();
+
+// Trust section CTA entrance
+(function(){
+  const el = document.getElementById('trust-cta');
+  if(!el) return;
+  const o = new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){
+      el.style.transition='opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1)';
+      el.style.opacity='1';el.style.transform='translateY(0)';
+      o.disconnect();
+    }
+  },{threshold:.5});
+  o.observe(el);
+})();
+
+</script>
+</body>
+</html>
