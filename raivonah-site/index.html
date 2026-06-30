@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Raivonah — Ideation To Execution</title>
+<meta name="description" content="Raivonah is a premium digital agency building exceptional web experiences for founders, startups, and SaaS companies."/>
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#050508;overflow-x:hidden}
+  iframe{
+    display:block;
+    width:100%;
+    border:none;
+    background:#050508;
+  }
+  /* Preloader sits fixed on top, full viewport height */
+  #frame-preloader{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100vh;
+    z-index:9999;
+  }
+  /* Each content section iframe is sized to its content via JS */
+  .frame-section{
+    width:100%;
+    display:block;
+  }
+</style>
+</head>
+<body>
+
+<!-- Preloader — fixed overlay, plays once on load -->
+<iframe id="frame-preloader" src="sections/preloader.html"></iframe>
+
+<!-- Page sections — stacked in order, each auto-sized to its content -->
+<iframe class="frame-section" id="frame-hero"         src="sections/hero.html"         height="900"></iframe>
+<iframe class="frame-section" id="frame-trust"         src="sections/trust.html"        height="700"></iframe>
+<iframe class="frame-section" id="frame-services"      src="sections/services.html"     height="1600"></iframe>
+<iframe class="frame-section" id="frame-work"          src="sections/work.html"         height="1800"></iframe>
+<iframe class="frame-section" id="frame-process"       src="sections/process.html"      height="4200"></iframe>
+<iframe class="frame-section" id="frame-why"           src="sections/why.html"          height="1300"></iframe>
+<iframe class="frame-section" id="frame-tech"          src="sections/tech.html"         height="1100"></iframe>
+<iframe class="frame-section" id="frame-testimonials"  src="sections/testimonials.html" height="900"></iframe>
+<iframe class="frame-section" id="frame-contact"       src="sections/contact.html"      height="900"></iframe>
+<iframe class="frame-section" id="frame-finale"        src="sections/finale.html"       height="900"></iframe>
+
+<script>
+// ─────────────────────────────────────────────
+//  AUTO-RESIZE every iframe to match its real
+//  content height (so there's no dead space
+//  and no internal scrollbars)
+// ─────────────────────────────────────────────
+function resizeIframe(iframe) {
+  try {
+    const doc = iframe.contentWindow.document;
+    const height = Math.max(
+      doc.documentElement.scrollHeight,
+      doc.body ? doc.body.scrollHeight : 0
+    );
+    if (height > 0) iframe.style.height = height + 'px';
+  } catch (e) {
+    // Cross-origin or not-yet-loaded — ignore safely
+  }
+}
+
+function resizeAllSections() {
+  document.querySelectorAll('.frame-section').forEach(resizeIframe);
+}
+
+// Resize each iframe once its own document finishes loading
+document.querySelectorAll('.frame-section').forEach(iframe => {
+  iframe.addEventListener('load', () => {
+    resizeIframe(iframe);
+    // Re-check shortly after — handles late-loading fonts/canvases
+    setTimeout(() => resizeIframe(iframe), 400);
+    setTimeout(() => resizeIframe(iframe), 1200);
+  });
+});
+
+// Also re-check on window resize (responsive layouts change height)
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(resizeAllSections, 200);
+});
+
+// ─────────────────────────────────────────────
+//  PRELOADER — listen for its own completion,
+//  then remove it from view (it self-fades and
+//  sets display:none internally already; this
+//  just unmounts the iframe afterward so it
+//  doesn't block scroll/clicks)
+// ─────────────────────────────────────────────
+const preloaderFrame = document.getElementById('frame-preloader');
+preloaderFrame.addEventListener('load', () => {
+  // Preloader runs ~3.2s total per its own internal timeline
+  setTimeout(() => {
+    preloaderFrame.style.pointerEvents = 'none';
+    preloaderFrame.style.transition = 'opacity .4s ease';
+    preloaderFrame.style.opacity = '0';
+    setTimeout(() => { preloaderFrame.style.display = 'none'; }, 450);
+  }, 3300);
+});
+
+// ─────────────────────────────────────────────
+//  SMOOTH ANCHOR SCROLL — lets buttons inside
+//  one iframe (e.g. "Start a Project") jump to
+//  another iframe's section by id, since cross-
+//  iframe navigation needs to happen at the
+//  parent page level
+// ─────────────────────────────────────────────
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'raivonah-scroll-to') {
+    const target = document.getElementById('frame-' + e.data.section);
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
+  }
+});
+</script>
+
+</body>
+</html>
