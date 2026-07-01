@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Raivonah — Preloader</title>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --blue:   #3B82F6;
+    --indigo: #6366F1;
+    --violet: #8B5CF6;
+    --void:   #000000;
+    --deep:   #050508;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--void);
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Preloader Shell ── */
+  #preloader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: opacity .6s ease;
+  }
+
+  /* ── Center stage ── */
+  #center-stage {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+
+  /* ── RAIVONAH wordmark ── */
+  #wordmark {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .6s ease, transform .6s ease;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: clamp(30px, 4vw, 40px);
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #F8F8FF;
+    margin-bottom: 20px;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+  #wordmark.in { opacity: 1; transform: translateY(0); }
+
+  #wordmark-grad {
+    background: linear-gradient(135deg, #3B82F6 0%, #6366F1 40%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Tagline ── */
+  #tagline {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(160, 160, 184, 0);
+    white-space: nowrap;
+    position: relative;
+    z-index: 2;
+    transition: color .5s ease;
+  }
+  #tagline.in { color: rgba(160, 160, 184, 0.9); }
+
+  /* Tagline underline */
+  #tagline-line {
+    width: 0%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #6366F1, transparent);
+    margin: 8px auto 0;
+    position: relative;
+    z-index: 2;
+    transition: width .5s ease;
+  }
+  #tagline-line.in { width: 100%; }
+
+  /* ── Loading percentage ── */
+  #loader-percent {
+    margin-top: 28px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity .5s ease;
+    background: linear-gradient(135deg, #3B82F6 0%, #6366F1 40%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    min-width: 48px;
+    text-align: center;
+  }
+  #loader-percent.in { opacity: 1; }
+
+  /* ── Demo hero behind (becomes visible at end) ── */
+  #hero-section {
+    position: fixed;
+    inset: 0;
+    background: #050508;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity .5s ease;
+  }
+  #hero-section.in { opacity: 1; }
+
+  .hero-content {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #5A5A78;
+    margin-bottom: 24px;
+  }
+
+  .hero-headline {
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1.0;
+    color: #F8F8FF;
+  }
+
+  .hero-headline .grad {
+    background: linear-gradient(135deg, #3B82F6 0%, #6366F1 40%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* replay button */
+  #replay {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 10000;
+    background: rgba(99,102,241,0.15);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #A0A0B8;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-family: inherit;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    opacity: 0;
+    transition: background 200ms, color 200ms, opacity 200ms;
+  }
+  #replay:hover { background: rgba(99,102,241,0.25); color: #F8F8FF; }
+</style>
+</head>
+<body>
+
+<!-- Hero (revealed after preloader) -->
+<div id="hero-section">
+  <div class="hero-content">
+    <div class="hero-eyebrow">Raivonah Agency</div>
+    <h1 class="hero-headline">
+      From idea<br/>to <span class="grad">product.</span>
+    </h1>
+  </div>
+</div>
+
+<!-- Preloader -->
+<div id="preloader">
+  <div id="center-stage">
+
+    <!-- RAIVONAH wordmark -->
+    <div id="wordmark">RAIV<span id="wordmark-grad">ONAH</span></div>
+
+    <!-- Tagline -->
+    <div id="tagline">IDEATION TO EXECUTION</div>
+    <div id="tagline-line"></div>
+
+    <!-- Loading percentage -->
+    <div id="loader-percent">0%</div>
+
+  </div><!-- /center-stage -->
+</div><!-- /preloader -->
+
+<button id="replay">↺ Replay</button>
+
+<script>
+// ─────────────────────────────────────────────
+//  RAIVONAH PRELOADER — simplified
+//  wordmark → tagline → 0–100% loading → reveal
+// ─────────────────────────────────────────────
+function runPreloader() {
+  const preloader   = document.getElementById('preloader');
+  const wordmark    = document.getElementById('wordmark');
+  const tagline     = document.getElementById('tagline');
+  const taglineLine = document.getElementById('tagline-line');
+  const percentEl   = document.getElementById('loader-percent');
+  const heroSection = document.getElementById('hero-section');
+  const replay      = document.getElementById('replay');
+
+  // Stage 1 — wordmark fades in
+  setTimeout(() => wordmark.classList.add('in'), 100);
+
+  // Stage 2 — tagline + underline fade in
+  setTimeout(() => {
+    tagline.classList.add('in');
+    taglineLine.classList.add('in');
+  }, 600);
+
+  // Stage 3 — percentage counts 0% → 100%
+  const countDuration = 1800; // ms
+  const countStart = 1050;
+  setTimeout(() => {
+    percentEl.classList.add('in');
+    const start = performance.now();
+    function tick(now) {
+      const elapsed = now - start;
+      const t = Math.min(elapsed / countDuration, 1);
+      const pct = Math.round(t * 100);
+      percentEl.textContent = pct + '%';
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        // Stage 4 — hold briefly, then reveal
+        setTimeout(() => {
+          preloader.style.opacity = '0';
+          heroSection.classList.add('in');
+          setTimeout(() => {
+            preloader.style.display = 'none';
+            replay.style.opacity = '1';
+            // Tell the parent page (index.html) that the intro is
+            // finished, so it can hide this iframe reliably instead
+            // of guessing a fixed delay.
+            if (window.parent && window.parent !== window) {
+              window.parent.postMessage({ type: 'raivonah-preloader-done' }, '*');
+            }
+          }, 600);
+        }, 300);
+      }
+    }
+    requestAnimationFrame(tick);
+  }, countStart);
+}
+
+window.addEventListener('load', () => {
+  setTimeout(runPreloader, 100);
+});
+
+document.getElementById('replay').addEventListener('click', () => {
+  location.reload();
+});
+</script>
+</body>
+</html>
